@@ -8,15 +8,33 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(test_trivial
-        test_trivial.cpp)
-
-target_link_libraries(test_trivial
-        PRIVATE
-        bin_serializer
-        Catch2::Catch2WithMain)
-
-include(CTest)
 include(Catch)
+include(CTest)
 
-catch_discover_tests(test_trivial)
+file(GLOB TEST_SOURCES
+     CONFIGURE_DEPENDS
+     *.cpp)
+
+foreach(test_source ${TEST_SOURCES})
+
+        get_filename_component(
+                test_name
+                ${test_source}
+                NAME_WE
+        )
+
+        add_executable(
+                ${test_name}
+                ${test_source}
+        )
+
+        target_link_libraries(
+                ${test_name}
+                PRIVATE
+                        bin_serializer
+                        Catch2::Catch2WithMain
+        )
+
+        catch_discover_tests(${test_name})
+endforeach()
+
