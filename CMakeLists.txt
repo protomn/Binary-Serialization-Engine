@@ -11,7 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(bin_serializer
         src/buffer.cpp
-        src/serialize.cpp)
+)
 
 target_include_directories(bin_serializer
         PUBLIC
