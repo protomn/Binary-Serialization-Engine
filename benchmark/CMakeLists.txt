@@ -10,14 +10,41 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(benchmark)
 
-add_executable(benchmark_serializer
-        benchmark_trivial.cpp)
+file(GLOB BENCHMARK_SOURCES
+     CONFIGURE_DEPENDS
+     *.cpp)
 
-target_link_libraries(benchmark_serializer
-    PRIVATE
-        bin_serializer
-        benchmark::benchmark)
+foreach(benchmark_source ${BENCHMARK_SOURCES})
 
-target_compile_features(benchmark_serializer
-    PRIVATE
-        cxx_std_20)
+    get_filename_component(
+        benchmark_name
+        ${benchmark_source}
+        NAME_WE
+    )
+
+    add_executable(
+        ${benchmark_name}
+        ${benchmark_source}
+    )
+
+    target_link_libraries(
+        ${benchmark_name}
+        PRIVATE
+            bin_serializer
+            benchmark::benchmark
+    )
+
+    target_compile_features(
+        ${benchmark_name}
+        PRIVATE
+            cxx_std_23
+    )
+
+    target_compile_options(
+        ${benchmark_name}
+        PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+    )
+endforeach()
