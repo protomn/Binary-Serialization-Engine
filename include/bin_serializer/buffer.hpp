@@ -20,7 +20,7 @@ namespace bin_serializer
 
         public:
 
-            void write(const void *data, size_t size);
+            [[nodiscard]] bool write(const void *data, size_t size);
             [[nodiscard]] bool read(size_t offset, void *dest, size_t size) const;
 
             [[nodiscard]] const uint8_t *data() const;
