@@ -25,5 +25,8 @@ namespace bin_serializer
 
             [[nodiscard]] const uint8_t *data() const;
             [[nodiscard]] size_t size() const;
+
+            void clear();
+            void reserve(size_t size);
     };
 } //namespace bin_serializer
