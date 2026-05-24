@@ -1,6 +1,6 @@
 #pragma once
 
-#include "buffer.hpp"
+#include "buffer_concept.hpp"
 #include "reflect.hpp"
 #include <type_traits>
 #include <stdexcept>
@@ -8,12 +8,12 @@
 
 namespace bin_serializer
 {
-    template<typename T>
-    void serialize_field(Buffer &buffer, const T& field)
+    template<BufferLike B, typename T>
+    bool serialize_field(B &buffer, const T& field)
     {
         if constexpr(std::is_trivially_copyable_v<T>)
         {
-            buffer.write(&field, sizeof(T));
+            return buffer.write(&field, sizeof(T));
         }
 
         else if constexpr(std::is_same_v<T, std::string>)
@@ -22,20 +22,18 @@ namespace bin_serializer
             const uint64_t size = field.size();
 
             serialize_field(buffer, size);
-            buffer.write(field.data(), size);
+            return buffer.write(field.data(), size);
         }
 
         else if constexpr(Reflectable<T>)
         {
-            field.reflect(
+            return field.reflect(
                 [&](const auto &... fields)
                 {
-                    (
-                        serialize_field(
-                            buffer,
-                            fields
-                        ), ...
-                    );
+                    return (... && serialize_field(
+                        buffer,
+                        fields
+                    ));
                 }
             );
         }
@@ -50,10 +48,10 @@ namespace bin_serializer
     }
 
 
-    template<Reflectable T>
-    void serialize(Buffer &buffer, const T &obj)
+    template<BufferLike B, Reflectable T>
+    bool serialize(B &buffer, const T &obj)
     {
-        serialize_field(
+        return serialize_field(
             buffer,
             obj
         );

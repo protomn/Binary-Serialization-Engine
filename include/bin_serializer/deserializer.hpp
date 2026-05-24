@@ -1,14 +1,15 @@
 #pragma once
 
-#include "buffer.hpp"
+#include "buffer_concept.hpp"
 #include "reflect.hpp"
 #include <type_traits>
+#include <string>
 #include <cstddef>
 
 namespace bin_serializer
 {   
-    template<typename T>
-    bool deserialize_field(const Buffer &buffer, size_t &offset, T &field)
+    template<BufferLike B, typename T>
+    bool deserialize_field(const B &buffer, size_t &offset, T &field)
     {
         if constexpr(std::is_trivially_copyable_v<T>)
         {
@@ -87,8 +88,8 @@ namespace bin_serializer
         }
     }
 
-    template<Reflectable T>
-    bool deserialize(const Buffer &buffer, T &obj)
+    template<BufferLike B, Reflectable T>
+    bool deserialize(const B &buffer, T &obj)
     {
         size_t offset{0};
 
