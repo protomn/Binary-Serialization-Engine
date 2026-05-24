@@ -21,8 +21,14 @@ namespace bin_serializer
             //support for std::string
             const uint64_t size = field.size();
 
-            serialize_field(buffer, size);
-            return buffer.write(field.data(), size);
+            bool success = serialize_field(buffer, size);
+
+            if(success)
+            {
+                return buffer.write(field.data(), size);
+            }
+            
+            return success;
         }
 
         else if constexpr(Reflectable<T>)
