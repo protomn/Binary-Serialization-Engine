@@ -32,4 +32,14 @@ namespace bin_serializer
         return data_.data();
     }
 
+    void Buffer::clear()
+    {
+        data_.clear();
+    }
+
+    void Buffer::reserve(size_t size)
+    {
+        data_.reserve(size);
+    }
+
 } //namespace bin_serializer
