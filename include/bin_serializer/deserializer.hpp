@@ -25,6 +25,36 @@ namespace bin_serializer
 
             return success;
         }
+
+        else if constexpr(std::is_same_v<T, std::string>)
+        {
+            //std::string support for deserialization
+            uint64_t size{0};
+
+            if(!deserialize_field(
+                buffer,
+                offset,
+                size))
+            {
+                return false;
+            }
+
+            //allocate string storage
+            field.resize(size);
+
+            const bool success = buffer.read(
+                                        offset,
+                                        field.data(),
+                                        size);
+            if(success)
+            {
+                offset += size;
+            }
+
+            return success;
+
+        }
+
         else if constexpr(Reflectable<T>)
         {
             return field.reflect(
