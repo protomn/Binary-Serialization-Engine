@@ -4,6 +4,7 @@
 #include "reflect.hpp"
 #include <type_traits>
 #include <stdexcept>
+#include <string>
 
 namespace bin_serializer
 {
@@ -14,6 +15,16 @@ namespace bin_serializer
         {
             buffer.write(&field, sizeof(T));
         }
+
+        else if constexpr(std::is_same_v<T, std::string>)
+        {
+            //support for std::string
+            const uint64_t size = field.size();
+
+            serialize_field(buffer, size);
+            buffer.write(field.data(), size);
+        }
+
         else if constexpr(Reflectable<T>)
         {
             field.reflect(
