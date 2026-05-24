@@ -4,11 +4,13 @@
 
 namespace bin_serializer
 {
-    void Buffer::write(const void *data, size_t size)
+    bool Buffer::write(const void *data, size_t size)
     {
         const auto *bytes = static_cast<const std::uint8_t*>(data);
 
         data_.insert(data_.end(), bytes, bytes + size);
+
+        return true;
     }
 
     bool Buffer::read(size_t offset, void *dest, size_t size) const
