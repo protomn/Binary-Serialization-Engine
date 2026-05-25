@@ -1,7 +1,7 @@
 #pragma once
 
 #include "buffer_concept.hpp"
-#include "reflect.hpp"
+#include "serializable.hpp"
 #include <type_traits>
 #include <string>
 #include <cstddef>
@@ -85,10 +85,12 @@ namespace bin_serializer
                 std::is_same_v<T, void>,
                 "unsupported type in deserializer"
             );
+
+            return false;
         }
     }
 
-    template<BufferLike B, Reflectable T>
+    template<BufferLike B, Serializable T>
     bool deserialize(const B &buffer, T &obj)
     {
         size_t offset{0};
