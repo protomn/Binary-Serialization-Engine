@@ -102,6 +102,8 @@ The serializer and deserializer are templated on any type satisfying `BufferLike
 
 ## Limitations
 
+**`Buffer` error handling catches `std::bad_alloc` at the allocation boundary.** `Buffer::write()` wraps `std::vector::insert()` in a `try/catch(std::bad_alloc)` and returns `false` on allocation failure, keeping the bool-return contract consistent with `FixedBuffer`. The buffer may be partially written before failure; callers should call `clear()` before retrying.
+
 **No `std::vector` or dynamic-length sequences.** Only `std::string` is treated as a non-trivial type with a known length-prefix protocol. A `std::vector<float>` field will fail to compile — there is no wire format defined for it.
 
 **No pointer types.** Pointers are trivially copyable but serializing their value (an address) is meaningless. There is no check for this; passing a struct containing a pointer will compile and silently serialize the raw address value.

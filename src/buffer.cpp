@@ -1,6 +1,7 @@
 #include "../include/bin_serializer/buffer.hpp"
 #include <cstring>
 #include <cstdint>
+#include <new>
 
 namespace bin_serializer
 {
@@ -8,7 +9,14 @@ namespace bin_serializer
     {
         const auto *bytes = static_cast<const std::uint8_t*>(data);
 
-        data_.insert(data_.end(), bytes, bytes + size);
+        try
+        {
+            data_.insert(data_.end(), bytes, bytes + size);
+        }
+        catch(const std::bad_alloc &)
+        {
+            return false;
+        }
 
         return true;
     }
