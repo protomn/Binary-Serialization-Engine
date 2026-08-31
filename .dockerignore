@@ -1,0 +1,7 @@
+.git
+.github
+.cache
+build
+.vscode
+compile_commands.json
+.DS_Store

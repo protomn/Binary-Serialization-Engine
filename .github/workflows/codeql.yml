@@ -1,0 +1,55 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, so newly published queries reach an unchanged codebase.
+    - cron: '17 4 * * 1'
+
+jobs:
+  analyze:
+    name: analyze-c-cpp
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      # Required to upload results to the repository's Security tab.
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          build-mode: manual
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build g++-14
+
+      # Built manually rather than with autobuild: this project needs specific
+      # cache variables (module scanning off, benchmarks off) that autobuild
+      # will not supply. CodeQL analyses whatever this step actually compiles,
+      # so the library and its tests are in scope.
+      - name: Build
+        run: |
+          cmake -B build -S . \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=g++-14 \
+            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
+            -DBUILD_BENCHMARKS=OFF
+          cmake --build build --parallel
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:c-cpp

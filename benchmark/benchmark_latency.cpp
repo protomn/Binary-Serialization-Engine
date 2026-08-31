@@ -8,13 +8,17 @@
 #include "naive_serializer.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <iostream>
-#include <mach/mach_time.h>
 #include <numeric>
 #include <vector>
 
 #include <benchmark/benchmark.h>
+
+#if defined(__APPLE__)
+#include <mach/mach_time.h>
+#endif
 
 struct Tick
 {
@@ -49,35 +53,71 @@ struct Tick
     }
 };
 
-class MachTimer
+/*
+    Monotonic high-resolution timer.
+
+    On Apple platforms mach_absolute_time()
+    returns raw timebase ticks, which must
+    be scaled to nanoseconds.
+
+    Elsewhere steady_clock already counts
+    in nanoseconds, so the conversion is
+    the identity.
+*/
+class HighResTimer
 {
-public:
+    public:
 
-    MachTimer()
-    {
-        mach_timebase_info(
-            &timebase_
-        );
-    }
+    #if defined(__APPLE__)
 
-    uint64_t now() const
-    {
-        return mach_absolute_time();
-    }
+        HighResTimer()
+        {
+            mach_timebase_info(
+                &timebase_
+            );
+        }
 
-    double to_nanoseconds(
-        uint64_t ticks
-    ) const
-    {
-        return static_cast<double>(
-            ticks *
-            timebase_.numer
-        ) / timebase_.denom;
-    }
+        uint64_t now() const
+        {
+            return mach_absolute_time();
+        }
 
-private:
+        double to_nanoseconds(
+            uint64_t ticks
+        ) const
+        {
+            return static_cast<double>(
+                ticks *
+                timebase_.numer
+            ) / timebase_.denom;
+        }
 
-    mach_timebase_info_data_t timebase_{};
+    private:
+
+        mach_timebase_info_data_t timebase_{};
+
+    #else
+
+        uint64_t now() const
+        {
+            return static_cast<uint64_t>(
+                std::chrono::duration_cast<
+                    std::chrono::nanoseconds
+                >(
+                    std::chrono::steady_clock::now()
+                        .time_since_epoch()
+                ).count()
+            );
+        }
+
+        double to_nanoseconds(
+            uint64_t ticks
+        ) const
+        {
+            return static_cast<double>(ticks);
+        }
+
+    #endif
 };
 
 template<typename Serializer>
@@ -114,7 +154,7 @@ void run_latency_benchmark(
         batch_size * sizeof(Tick)
     > buffer;
 
-    MachTimer timer;
+    HighResTimer timer;
 
     /*
         Validation pass.
